@@ -135,7 +135,8 @@ def _tr(t: Transcript, db: Session) -> dict[str, Any]:
 
 def _seg(s: TranscriptSegment) -> dict[str, Any]:
     return {"id": s.id, "start_time": s.start_time, "end_time": s.end_time, "text": s.text, "edited": s.edited,
-            "words_estimated": s.words_estimated, "word_count": len(s.word_timestamps_json or []) or len(s.text.split())}
+            "words_estimated": s.words_estimated, "word_count": len(s.word_timestamps_json or []) or len(s.text.split()),
+            "words": [w["word"].strip() for w in (s.word_timestamps_json or [])] or s.text.split()}
 
 
 @router.get("/videos/{video_id}/transcripts")

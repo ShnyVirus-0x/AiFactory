@@ -1,6 +1,6 @@
-import { Film, Pencil, Play, Trash2, UploadCloud, Volume2, VolumeX } from "lucide-react";
+import { Film, FileText, Pencil, Play, Trash2, UploadCloud, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState, type DragEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Badge, Confirm, Empty, ErrorBox, fmtBytes, fmtDate, fmtDur, Modal, PageHeader, Spinner } from "../components/ui";
 import { useAsync } from "../hooks/useAsync";
 import { api, errMsg, uploadVideos } from "../services/api";
@@ -75,6 +75,7 @@ function VideoCard({ v, onPlay, onRename, onDelete }: { v: Video; onPlay: () => 
         <div className="flex items-center justify-between text-xs text-mute">
           <span>{fmtBytes(v.file_size)} · {fmtDate(v.created_at)}</span>
           <span className="flex gap-1">
+            <Link className="rounded p-1 hover:bg-panel-2 hover:text-ink" to={`/transcripts?video=${v.id}`} aria-label="Transkrip" title="Transkrip"><FileText size={14} /></Link>
             <button className="rounded p-1 hover:bg-panel-2 hover:text-ink" onClick={onRename} aria-label="Ganti nama"><Pencil size={14} /></button>
             <button className="rounded p-1 hover:bg-bad/20 hover:text-bad" onClick={onDelete} aria-label="Hapus"><Trash2 size={14} /></button>
           </span>

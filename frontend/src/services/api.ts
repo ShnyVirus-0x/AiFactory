@@ -1,4 +1,4 @@
-import type { ApiErrorBody, Dashboard, GpuReport, Health, Project, Resources, UploadResult, Video } from "../types";
+import type { ApiErrorBody, Dashboard, GpuReport, Health, LimitsInfo, Limits, LoadedModel, Project, Resources, Segment, TranscriptFull, TranscriptInfo, TranscriptionJob, UploadResult, Video, WhisperModel } from "../types";
 
 export class ApiError extends Error {
   code: string;
@@ -66,6 +66,26 @@ export const api = {
   },
   renameVideo: (id: string, filename: string) => req<Video>(`/videos/${id}`, json("PATCH", { filename })),
   deleteVideo: (id: string) => req<void>(`/videos/${id}`, { method: "DELETE" }),
+  limits: () => req<LimitsInfo>("/system/limits"),
+  setLimits: (b: Partial<Limits>) => req<LimitsInfo>("/system/limits", json("PUT", b)),
+  loadedModels: () => req<LoadedModel[]>("/system/models"),
+  unloadModel: (key: string) => req<{ unloaded: string }>(`/system/models/${encodeURIComponent(key)}/unload`, { method: "POST" }),
+  unloadAll: () => req<{ unloaded: number }>("/system/models/unload-all", { method: "POST" }),
+
+  whisperModels: () => req<WhisperModel[]>("/transcription/models"),
+  downloadWhisper: (name: string) => req<unknown>(`/transcription/models/${name}/download`, json("POST", { confirm: true })),
+  transcribe: (videoId: string, b: { language: string; model: string; audio_track: number }) => req<TranscriptionJob>(`/videos/${videoId}/transcribe`, json("POST", b)),
+  asrJobs: (videoId?: string) => req<TranscriptionJob[]>(`/transcription/jobs${videoId ? `?video_id=${videoId}` : ""}`),
+  cancelAsr: (id: string) => req<TranscriptionJob>(`/transcription/jobs/${id}/cancel`, { method: "POST" }),
+  transcripts: (videoId: string) => req<TranscriptInfo[]>(`/videos/${videoId}/transcripts`),
+  transcript: (id: string, q = "") => req<TranscriptFull>(`/transcripts/${id}${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  deleteTranscript: (id: string) => req<void>(`/transcripts/${id}`, { method: "DELETE" }),
+  patchSegment: (id: number, b: { text?: string; start_time?: number; end_time?: number }) => req<Segment>(`/transcripts/segments/${id}`, json("PATCH", b)),
+  splitSegment: (id: number, wordIndex: number) => req<Segment[]>(`/transcripts/segments/${id}/split`, json("POST", { word_index: wordIndex })),
+  mergeNext: (id: number) => req<Segment>(`/transcripts/segments/${id}/merge-next`, { method: "POST" }),
+  deleteSegment: (id: number) => req<void>(`/transcripts/segments/${id}`, { method: "DELETE" }),
+  replaceAll: (id: string, b: { find: string; replace: string; case_sensitive: boolean; whole_word: boolean }) => req<{ replaced: number }>(`/transcripts/${id}/replace`, json("POST", b)),
+  exportUrl: (id: string, fmt: "srt" | "vtt" | "txt") => `/api/transcripts/${id}/export?format=${fmt}`,
   thumbUrl: (id: string) => `/api/videos/${id}/thumbnail`,
   streamUrl: (id: string) => `/api/videos/${id}/stream`,
 };

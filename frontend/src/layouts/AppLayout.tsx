@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, Brain, Captions, Clapperboard, Crop, Download, FolderKanban, Image, LayoutDashboard, Library, Settings, SplitSquareVertical, Wifi, WifiOff } from "lucide-react";
+import { BarChart3, Boxes, Brain, Captions, Clapperboard, FileText, Crop, Download, FolderKanban, Image, LayoutDashboard, Library, Settings, SplitSquareVertical, Wifi, WifiOff } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Badge, Toasts } from "../components/ui";
 import { useLiveEvents } from "../hooks/useLiveEvents";
@@ -8,6 +8,7 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, phase: 1 },
   { to: "/projects", label: "Proyek", icon: FolderKanban, phase: 1 },
   { to: "/library", label: "Perpustakaan Video", icon: Library, phase: 1 },
+  { to: "/transcripts", label: "Transkripsi", icon: FileText, phase: 2 },
   { to: "/analysis", label: "Analisis AI", icon: Brain, phase: 3 },
   { to: "/editor", label: "Editor Klip", icon: Clapperboard, phase: 4 },
   { to: "/subtitles", label: "Studio Subtitle", icon: Captions, phase: 5 },
@@ -39,7 +40,7 @@ export function AppLayout() {
               className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive ? "bg-brand/15 text-brand-2" : "text-mute hover:bg-panel-2 hover:text-ink"}`}>
               <Icon size={17} />
               <span className="flex-1">{label}</span>
-              {phase > 1 && <span className="rounded bg-panel-2 px-1.5 text-[10px] text-mute" title={`Tersedia pada Fase ${phase}`}>F{phase}</span>}
+              {phase > 2 && <span className="rounded bg-panel-2 px-1.5 text-[10px] text-mute" title={`Tersedia pada Fase ${phase}`}>F{phase}</span>}
             </NavLink>
           ))}
         </nav>

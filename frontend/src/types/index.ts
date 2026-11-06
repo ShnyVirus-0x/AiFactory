@@ -88,7 +88,9 @@ export interface Health {
   ollama: { running: boolean; url: string; models: string[]; model_ready: boolean; wanted_model: string; reason: string | null };
   storage_dir: string;
   models_dir: string;
-  limits: Record<string, number>;
+  limits: Limits & { max_upload_mb: number };
+  cuda: { gpu_present: boolean; driver_cuda: string | null; driver_version: string | null; required: string; ctranslate2_cuda_devices: number | null; ok: boolean; reason: string | null };
+  models_loaded: LoadedModel[];
   capabilities: Capability[];
 }
 
@@ -109,4 +111,82 @@ export interface Dashboard {
 
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
+}
+
+export interface Limits {
+  ai_workers: number;
+  gpu_render_workers: number;
+  cpu_workers: number;
+  vram_reserve_mb: number;
+  compute_mode: "auto" | "gpu" | "cpu";
+}
+export interface LimitsInfo extends Limits {
+  effective_device: "cuda" | "cpu" | "unavailable";
+  device_reason: string | null;
+}
+export interface LoadedModel {
+  key: string;
+  device: string;
+  est_vram_mb: number;
+  loaded_at: number;
+  last_used: number;
+}
+
+export interface DownloadState {
+  status: "downloading" | "done" | "failed";
+  downloaded_mb: number;
+  total_mb: number;
+  error: string | null;
+}
+export interface WhisperModel {
+  name: string;
+  repo: string;
+  approx_size_mb: number;
+  size_is_estimate: boolean;
+  vram_mb: number;
+  note: string;
+  installed: boolean;
+  installed_size_mb: number | null;
+  path: string;
+  default: boolean;
+  enough_disk: boolean;
+  download: DownloadState | null;
+}
+export interface TranscriptionJob {
+  id: string;
+  video_id: string;
+  transcript_id: string | null;
+  status: "queued" | "running" | "done" | "failed" | "cancelled";
+  progress: number;
+  language: string;
+  model: string;
+  device: string;
+  audio_track: number;
+  error_message: string | null;
+  created_at: string;
+}
+export interface TranscriptInfo {
+  id: string;
+  video_id: string;
+  language: string;
+  model: string;
+  duration: number;
+  language_probability: number | null;
+  source: string;
+  segment_count: number;
+  created_at: string;
+}
+export interface Segment {
+  id: number;
+  start_time: number;
+  end_time: number;
+  text: string;
+  edited: boolean;
+  words_estimated: boolean;
+  word_count: number;
+  words: string[];
+}
+export interface TranscriptFull extends TranscriptInfo {
+  total_matches: number;
+  segments: Segment[];
 }

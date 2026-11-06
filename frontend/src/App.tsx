@@ -4,6 +4,7 @@ import { ComingSoon } from "./pages/ComingSoon";
 import { Dashboard } from "./pages/Dashboard";
 import { Projects } from "./pages/Projects";
 import { SettingsPage } from "./pages/SettingsPage";
+import { Transcription } from "./pages/Transcription";
 import { VideoLibrary } from "./pages/VideoLibrary";
 
 const soon = (path: string, title: string, capability: string, description: string) => (
@@ -17,6 +18,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="projects" element={<Projects />} />
         <Route path="library" element={<VideoLibrary />} />
+        <Route path="transcripts" element={<Transcription />} />
         <Route path="settings" element={<SettingsPage />} />
         {soon("analysis", "Analisis AI", "clip_detection", "Transkripsi (Whisper) dan deteksi klip viral dengan Qwen lokal.")}
         {soon("editor", "Editor Klip", "clip_editor", "Pratinjau, potong, bagi, gabung, timeline, dan undo/redo.")}

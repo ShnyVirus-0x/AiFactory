@@ -1,6 +1,7 @@
 import { CheckCircle2, RefreshCw, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Badge, ErrorBox, fmtBytes, Meter, PageHeader, Spinner } from "../components/ui";
+import type { Limits } from "../types";
 import { useAsync } from "../hooks/useAsync";
 import { api, errMsg } from "../services/api";
 import { useAppStore } from "../stores/useAppStore";
@@ -11,6 +12,32 @@ export function SettingsPage() {
   const health = useAsync(api.health);
   const gpu = useAsync(() => api.gpu(false));
   const [testing, setTesting] = useState(false);
+  const lim = useAsync(api.limits);
+  const [draft, setDraft] = useState<Limits | null>(null);
+  const limits = draft ?? lim.data;
+
+  async function saveLimits() {
+    if (!draft) return;
+    try {
+      await api.setLimits(draft);
+      toast("success", "Batas sumber daya disimpan");
+      setDraft(null);
+      void lim.reload();
+      void health.reload();
+    } catch (e) {
+      toast("error", errMsg(e));
+    }
+  }
+  async function unload(key?: string) {
+    try {
+      if (key) await api.unloadModel(key);
+      else await api.unloadAll();
+      toast("success", "Model dilepas dari memori");
+      void health.reload();
+    } catch (e) {
+      toast("error", errMsg(e));
+    }
+  }
 
   async function retestNvenc() {
     setTesting(true);
@@ -84,18 +111,58 @@ export function SettingsPage() {
         </section>
 
         <section className="card">
-          <h2 className="mb-3 text-sm font-semibold">Batas sumber daya &amp; lokasi</h2>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <dt className="text-mute">AI worker</dt><dd>{h.limits.ai_workers}</dd>
-            <dt className="text-mute">GPU render worker</dt><dd>{h.limits.gpu_render_workers}</dd>
-            <dt className="text-mute">CPU utility worker</dt><dd>{h.limits.cpu_workers}</dd>
-            <dt className="text-mute">Cadangan VRAM</dt><dd>{h.limits.vram_reserve_mb} MB</dd>
-            <dt className="text-mute">Batas unggah</dt><dd>{fmtBytes(h.limits.max_upload_mb * 1024 * 1024)}</dd>
+          <h2 className="mb-3 text-sm font-semibold">Batas sumber daya</h2>
+          {limits ? (
+            <div className="space-y-3 text-sm">
+              <label className="block text-xs text-mute">Mode pemrosesan AI
+                <select className="input mt-1" value={limits.compute_mode} onChange={(e) => setDraft({ ...limits, compute_mode: e.target.value as Limits["compute_mode"] })}>
+                  <option value="auto">Otomatis (GPU bila tersedia, jika tidak CPU)</option>
+                  <option value="gpu">Paksa GPU (gagal bila CUDA tidak tersedia)</option>
+                  <option value="cpu">Paksa CPU</option>
+                </select></label>
+              {lim.data && <div className="text-xs text-mute">Perangkat efektif saat ini: <b className="text-ink">{lim.data.effective_device}</b>{lim.data.device_reason ? ` — ${lim.data.device_reason}` : ""}</div>}
+              <div className="grid grid-cols-2 gap-3">
+                {([["ai_workers", "Worker AI", 1, 4], ["gpu_render_workers", "Worker render GPU", 1, 4], ["cpu_workers", "Worker CPU", 1, 16], ["vram_reserve_mb", "Cadangan VRAM (MB)", 0, 24576]] as const).map(([k, label, lo, hi]) => (
+                  <label key={k} className="text-xs text-mute">{label}
+                    <input className="input mt-1" type="number" min={lo} max={hi} value={limits[k]} onChange={(e) => setDraft({ ...limits, [k]: Number(e.target.value) })} /></label>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="btn btn-primary" disabled={!draft} onClick={() => void saveLimits()}>Simpan</button>
+                {draft && <button className="btn btn-ghost" onClick={() => setDraft(null)}>Batal</button>}
+                <span className="ml-auto text-xs text-mute">Batas unggah: {fmtBytes(h.limits.max_upload_mb * 1024 * 1024)}</span>
+              </div>
+            </div>
+          ) : <Spinner />}
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-line pt-3 text-sm">
             <dt className="text-mute">Alamat server</dt><dd className="font-mono text-xs">{h.bind}</dd>
             <dt className="text-mute">Penyimpanan</dt><dd className="break-all font-mono text-xs">{h.storage_dir}</dd>
             <dt className="text-mute">Folder model</dt><dd className="break-all font-mono text-xs">{h.models_dir}</dd>
           </dl>
-          <p className="mt-2 text-xs text-mute">Diubah lewat file <code>.env</code> (awalan <code>ASF_</code>). Pengelolaan model AI (memuat/melepas dari VRAM) dikerjakan pada Fase 2–3.</p>
+        </section>
+
+        <section className="card">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Model AI di memori &amp; CUDA</h2>
+            <button className="btn btn-ghost" disabled={!h.models_loaded.length} onClick={() => void unload()}>Lepas semua</button>
+          </div>
+          {h.models_loaded.length === 0 ? <p className="text-sm text-mute">Tidak ada model yang sedang dimuat.</p> : (
+            <ul className="space-y-2 text-sm">
+              {h.models_loaded.map((m) => (
+                <li key={m.key} className="flex items-center justify-between rounded-lg bg-panel-2 px-3 py-2">
+                  <span>{m.key} <Badge kind={m.device === "cuda" ? "ok" : "mute"}>{m.device}</Badge>{m.device === "cuda" && <span className="ml-2 text-xs text-mute">±{m.est_vram_mb} MB VRAM</span>}</span>
+                  <button className="text-xs text-bad hover:underline" onClick={() => void unload(m.key)}>Lepas</button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="mt-4 space-y-1 border-t border-line pt-3 text-xs">
+            <div className="flex items-center gap-2 text-sm"><span className="text-mute">Kompatibilitas CUDA (faster-whisper):</span>
+              {h.cuda.ok ? <Badge kind="ok">kompatibel</Badge> : <Badge kind="warn">belum terbukti</Badge>}</div>
+            <div className="text-mute">Dibutuhkan: {h.cuda.required}</div>
+            <div className="text-mute">Driver CUDA: {h.cuda.driver_cuda ?? "tidak terdeteksi"} · GPU terlihat oleh CTranslate2: {h.cuda.ctranslate2_cuda_devices ?? "tidak diketahui"}</div>
+            {h.cuda.reason && <div className="text-warn">{h.cuda.reason}</div>}
+          </div>
         </section>
 
         <section className="card lg:col-span-2">
