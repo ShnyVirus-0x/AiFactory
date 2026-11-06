@@ -39,6 +39,7 @@ call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip >nul
 pip install -r backend\requirements.txt || (echo [GAGAL] Instal dependensi Python. & exit /b 1)
 echo [OK] Dependensi Python terpasang
+where nvidia-smi >nul 2>nul && (echo [INFO] Memasang pustaka CUDA 12 + cuDNN 9 untuk faster-whisper ^(besar, ~1 GB^)... & pip install -r backend\requirements-gpu.txt || (echo [PERINGATAN] Gagal memasang pustaka CUDA; transkripsi akan memakai CPU. & set "WARN=1"))
 
 rem --- .env + direktori penyimpanan ---
 if not exist .env (copy .env.example .env >nul & echo [OK] .env dibuat dari .env.example) else (echo [OK] .env sudah ada ^(tidak ditimpa^))

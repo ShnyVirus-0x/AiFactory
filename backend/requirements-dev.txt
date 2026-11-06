@@ -1,2 +1,3 @@
 -r requirements.txt
 pytest>=8
+scikit-image>=0.22  # hanya untuk tes: gambar wajah nyata (astronaut) bagi tes deteksi wajah

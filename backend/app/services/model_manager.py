@@ -29,9 +29,33 @@ class LoadedModel:
     unloader: Callable[[Any], None] | None = None
 
 
+def register_cuda_dlls() -> list[str]:
+    """Windows: tambahkan folder DLL cuBLAS/cuDNN dari paket pip `nvidia-*-cu12` agar CTranslate2 menemukannya.
+    (Belum diuji di Windows sungguhan.) Di OS lain tidak melakukan apa pun."""
+    import os
+    import sys
+    from pathlib import Path
+
+    added: list[str] = []
+    if sys.platform != "win32" or not hasattr(os, "add_dll_directory"):
+        return added
+    for base in sys.path:
+        nv = Path(base) / "nvidia"
+        if nv.is_dir():
+            for sub in nv.glob("*/bin"):
+                try:
+                    os.add_dll_directory(str(sub))
+                    os.environ["PATH"] = str(sub) + os.pathsep + os.environ.get("PATH", "")
+                    added.append(str(sub))
+                except OSError:
+                    pass
+    return added
+
+
 def cuda_available() -> bool:
     """CUDA untuk CTranslate2/faster-whisper benar-benar dapat dipakai (bukan sekadar ada nvidia-smi)."""
     try:
+        register_cuda_dlls()
         import ctranslate2
 
         return ctranslate2.get_cuda_device_count() > 0

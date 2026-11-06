@@ -83,7 +83,7 @@ def test_migrations_create_schema_and_are_idempotent(tmp_path):
     assert expected <= tables
     cols = {r[1] for r in con.execute("pragma table_info(videos)")}
     assert {"project_id", "filename", "source_path", "duration", "width", "height", "fps", "file_size", "created_at"} <= cols
-    assert con.execute("select version_num from alembic_version").fetchone()[0] == "0002"
+    assert con.execute("select version_num from alembic_version").fetchone()[0] == "0003"
     con.close()
 
 

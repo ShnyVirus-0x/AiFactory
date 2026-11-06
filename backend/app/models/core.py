@@ -169,6 +169,11 @@ class RenderJob(Base):
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    # Fase 4: encoder yang BENAR-BENAR dipakai, konfigurasi yang dirender, dan hasil verifikasi FFprobe
+    encoder: Mapped[str] = mapped_column(String(30), default="", server_default="")
+    uses_gpu: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    spec_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    output_info: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     clip: Mapped[Clip] = relationship(back_populates="render_jobs")
 

@@ -12,11 +12,11 @@ from fastapi.responses import FileResponse
 from . import __version__
 from .config import get_settings
 from .database import run_migrations
-from .routers import jobs, projects, system, transcription, videos
+from .routers import clips, jobs, projects, system, transcription, videos
 from .services import gpu_monitor
 from .utils.errors import install_error_handlers
 from .utils.events import hub
-from .workers import transcription_worker
+from .workers import render_worker, transcription_worker
 from .utils.logging import setup_logging
 
 setup_logging(get_settings().logs_dir)
@@ -44,6 +44,7 @@ async def lifespan(_: FastAPI):
     hub.bind_loop(asyncio.get_running_loop())
     gpu_monitor.psutil.cpu_percent(interval=None)  # inisialisasi pembacaan CPU
     await asyncio.to_thread(transcription_worker.recover_on_startup)
+    await asyncio.to_thread(render_worker.recover_on_startup)
     task = asyncio.create_task(_stats_pusher())
     log.info("AI Shorts Factory %s siap di http://%s:%s", __version__, s.host, s.port)
     try:
@@ -72,7 +73,7 @@ def create_app() -> FastAPI:
         resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
         return resp
 
-    for r in (system.router, projects.router, videos.router, jobs.router, transcription.router):
+    for r in (system.router, projects.router, videos.router, jobs.router, transcription.router, clips.router):
         app.include_router(r, prefix="/api")
 
     @app.websocket("/ws")
