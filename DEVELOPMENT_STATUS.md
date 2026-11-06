@@ -11,8 +11,9 @@ editor transkrip (edit/pisah/gabung/hapus/cari-ganti/cari), ekspor SRT/VTT/TXT, 
 **Fase 4 (sebagian, dipindahkan dari ClipForge):** klip manual, deteksi wajah OpenCV, smart crop, subtitle ASS, layout fill/letterbox/split, pratinjau, render + verifikasi FFprobe, UI "Smart Crop & Render".
 
 ## Hasil tes (dijalankan di sandbox Linux, CPU, tanpa GPU)
-- Backend pytest: **82 passed** (`backend/tests`)
-- Integrasi server sungguhan: **2 passed** (`tests/integration`; satu tes bind-loopback otomatis skip bila mesin tak punya alamat non-loopback)
+- Backend pytest (`backend/tests`): **82 passed**
+- Integrasi server sungguhan (`tests/integration`): **1 passed, 1 skipped** (tes bind-loopback di-skip karena sandbox tak punya alamat non-loopback; BELUM terbukti di sini)
+- Total `python -m pytest` dari `backend/`: 83 passed, 1 skipped
 - Frontend vitest: **2 passed**; `tsc -b` dan `vite build` berhasil
 - Smoke test browser (Playwright): proyek → unggah → klip → analisis wajah → render → unduh, tanpa error konsol
 - Bukti nyata: wajah (gambar astronaut) tetap ada dalam hasil render pada awal DAN akhir saat wajah berpindah kiri→kanan; center crop memotong wajah; subtitle terbukti ter-burn (perbedaan piksel terkonsentrasi di area caption, warna highlight terdeteksi).
