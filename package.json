@@ -1,13 +1,14 @@
 {
   "name": "ai-shorts-factory",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AI Shorts Factory - studio video pendek lokal. Skrip pembantu; frontend ada di ./frontend.",
   "scripts": {
     "install:frontend": "npm --prefix frontend install",
     "build": "npm --prefix frontend run build",
     "dev:frontend": "npm --prefix frontend run dev",
-    "test:backend": "python -m pytest backend -q",
-    "typecheck": "npm --prefix frontend exec -- tsc -b"
+    "test:backend": "python -m pytest backend/tests tests/integration -q",
+    "typecheck": "npm --prefix frontend exec -- tsc -b",
+    "test:frontend": "npm --prefix frontend test"
   }
 }

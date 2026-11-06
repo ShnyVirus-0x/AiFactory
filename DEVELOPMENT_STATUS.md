@@ -1,29 +1,38 @@
 # DEVELOPMENT STATUS
 
-## Fase saat ini: 1 — Fondasi (SELESAI), Fase 2–8 BELUM dikerjakan
+## Fase saat ini
+Fase 1 SELESAI · Fase 2 SELESAI (inferensi Whisper nyata BELUM terverifikasi) · Fase 4 SEBAGIAN · Fase 3, 5, 6, 7, 8 BELUM.
 
 ## Selesai
-- Backend FastAPI: proyek, video (upload/list/filter/rename/delete/thumbnail/stream), dashboard, health, GPU, resources, WebSocket
-- DB SQLite WAL + Alembic migrasi 0001 (users, projects, videos, transcripts, transcript_segments, clips, clip_edits, templates, render_jobs, settings, activity_log)
-- Frontend React 19 + Vite + Tailwind v4: Dashboard, Proyek, Perpustakaan Video, Pengaturan; halaman modul lain = "belum tersedia"
-- Skrip Windows: install/start/stop/check_gpu/download_models
+**Fase 1 (fondasi):** FastAPI + SQLite/Alembic (migrasi 0001–0003), proyek, unggah/perpustakaan video, dashboard, diagnostik GPU/NVENC/CUDA, batas sumber daya yang dapat diubah (disimpan di DB),
+model manager (satu model besar di VRAM, unload, mode CPU/GPU/auto), log JSON terstruktur, WebSocket event, skrip Windows (install/start/stop/check_gpu/download_models), git.
+**Fase 2 (transkripsi):** katalog model Whisper + unduhan atomik dengan persetujuan, ekstraksi audio 16 kHz mono, adaptor faster-whisper (word timestamps, VAD), pemisahan kalimat, antrean persisten (batal, pemulihan saat start),
+editor transkrip (edit/pisah/gabung/hapus/cari-ganti/cari), ekspor SRT/VTT/TXT, UI.
+**Fase 4 (sebagian, dipindahkan dari ClipForge):** klip manual, deteksi wajah OpenCV, smart crop, subtitle ASS, layout fill/letterbox/split, pratinjau, render + verifikasi FFprobe, UI "Smart Crop & Render".
 
-## Hasil tes (dijalankan di sandbox Linux)
-- Backend pytest: **33 passed**
-- Frontend: `tsc -b` dan `vite build` berhasil
-- Smoke test Playwright (buat proyek → unggah video → dashboard → pengaturan → halaman fase): tanpa error konsol
+## Hasil tes (dijalankan di sandbox Linux, CPU, tanpa GPU)
+- Backend pytest: **82 passed** (`backend/tests`)
+- Integrasi server sungguhan: **2 passed** (`tests/integration`; satu tes bind-loopback otomatis skip bila mesin tak punya alamat non-loopback)
+- Frontend vitest: **2 passed**; `tsc -b` dan `vite build` berhasil
+- Smoke test browser (Playwright): proyek → unggah → klip → analisis wajah → render → unduh, tanpa error konsol
+- Bukti nyata: wajah (gambar astronaut) tetap ada dalam hasil render pada awal DAN akhir saat wajah berpindah kiri→kanan; center crop memotong wajah; subtitle terbukti ter-burn (perbedaan piksel terkonsentrasi di area caption, warna highlight terdeteksi).
 
-## BELUM diverifikasi
-- GPU NVIDIA/NVENC/CUDA nyata (sandbox tanpa GPU; kode deteksi hanya diuji dengan parser dan jalur "tidak tersedia")
-- Skrip .bat di Windows sungguhan (ditulis, belum dijalankan)
-- Ollama/Qwen, faster-whisper (belum diintegrasikan)
+## BELUM diverifikasi / keterbatasan jujur
+- **Whisper nyata:** sandbox tidak bisa mengunduh model (huggingface.co diblokir). Tes memakai test-double pada antarmuka `Transcriber`; adaptor faster-whisper diuji dengan model tiruan (tanpa inferensi). Akurasi timestamp Whisper TIDAK terukur; yang terukur: durasi audio hasil ekstraksi (±0.15 dtk) dan validasi struktur timestamp.
+- **GPU/NVENC/CUDA:** tidak ada GPU di sandbox. Logika pemilihan encoder diuji dengan monkeypatch; encode NVENC, HEVC NVENC, dan registrasi DLL CUDA di Windows (`register_cuda_dlls`) belum pernah dijalankan.
+- **Skrip `.bat`:** ditulis dan ditinjau, belum dijalankan di Windows.
+- **Ollama/Qwen:** belum diintegrasikan (Fase 3). Hanya status koneksi yang diperiksa.
+- Deteksi wajah memakai Haar cascade: hanya andal untuk wajah frontal; wajah menyamping/tertutup bisa terlewat. Model yang lebih kuat belum ada.
+- Punctuation: mengandalkan keluaran Whisper (tidak ada model tanda baca terpisah).
+- Split screen baru layout dasar dari SATU sumber (kamera atas + layar bawah). Unggah video tambahan/gameplay, garis pembatas, jarak: belum ada.
+- Editor klip belum punya timeline/waveform/undo-redo/gabung klip. Watermark/BGM/template (Fase 5) belum dipindahkan dari ClipForge.
+- Penghapusan aman (overwrite) belum ada; hapus biasa.
+- Kontrol kualitas video panjang (jam-an) belum diuji; transkripsi streaming per segmen dirancang untuk memori konstan tetapi tidak diukur.
 
-## Belum tersedia (endpoint mengembalikan 501 `not_available`)
-Fase 2 transkripsi · Fase 3 deteksi klip AI · Fase 4 editor/face tracking/split screen · Fase 5 subtitle/template · Fase 6 batch renderer/export · Fase 7 thumbnail · Fase 8 optimasi/tes akhir
-
-## Masalah diketahui
-- Frontend belum punya tes otomatis (hanya type-check + smoke test manual)
-- Penghapusan aman berlapis (overwrite) belum ada; hapus biasa saja
+## Belum tersedia (UI menampilkan "belum tersedia")
+Fase 3 deteksi klip AI (Qwen) · Fase 4 editor timeline · Fase 5 studio subtitle/template/watermark/branding · Fase 6 batch renderer/Export Center · Fase 7 diarization, thumbnail, judul AI, peningkatan audio · Fase 8 finalisasi.
 
 ## Langkah berikutnya
-Fase 2: integrasi faster-whisper large-v3-turbo (unduh model dengan konfirmasi ukuran & progres), transkrip + segmen kata ke DB.
+1. Verifikasi di Windows RTX 4070 Ti: `install.bat`, `check_gpu.bat`, unduh `large-v3-turbo`, transkripsi video pendek nyata, render dengan NVENC (lihat badge encoder).
+2. Fase 3: klien Ollama + Qwen2.5 7B, jendela analisis tumpang tindih, skor 0–100 multi-dimensi, kandidat 10–30 klip.
+3. Fase 5: pindahkan watermark/BGM/hook SFX/template dari ClipForge; Fase 6: antrean batch persisten.

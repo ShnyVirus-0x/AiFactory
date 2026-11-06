@@ -1,33 +1,36 @@
-# AI Shorts Factory — Fase 1 (Fondasi)
+# AI Shorts Factory
 
-Studio pembuat video pendek yang berjalan **100% lokal** di Windows. Server hanya mengikat `127.0.0.1`,
-tanpa unggah ke cloud, tanpa API AI eksternal, tanpa analitik.
+Studio pembuat video pendek yang berjalan **100% lokal** di Windows: transkripsi (faster-whisper), face tracking, subtitle per kata, dan render FFmpeg.
+Server hanya mengikat `127.0.0.1`; tanpa unggah ke cloud, tanpa API AI eksternal, tanpa analitik.
 
-> **Status jujur:** hanya **Fase 1 dari 8** yang selesai. Modul lain tampil di UI sebagai "belum tersedia".
-> Lihat `DEVELOPMENT_STATUS.md`.
+> **Status jujur:** Fase 1–2 selesai, Fase 4 **sebagian** (Smart Crop & Render per klip). Deteksi klip AI (Qwen), editor timeline, template, batch renderer, thumbnail,
+> diarization belum ada dan tampil "belum tersedia" di UI. Detail: `DEVELOPMENT_STATUS.md`.
 
-## Yang sudah berfungsi (Fase 1)
-- Proyek: buat, ubah, arsip, hapus (file ikut terhapus, hanya di dalam `storage/`)
-- Unggah banyak video (MP4/MOV/MKV/WEBM/AVI) dengan progres nyata, validasi ffprobe, thumbnail, deteksi duplikat (sha256)
-- Perpustakaan: cari, filter, urutkan, ganti nama, hapus, pratinjau
-- Dashboard & diagnostik: CPU/RAM/disk, GPU NVIDIA (via `nvidia-smi`), NVENC (uji encode sungguhan), cek FFmpeg/Ollama
-- Database SQLite + migrasi Alembic (11 tabel), WebSocket event real-time
+## Fitur yang berfungsi
+- **Proyek & perpustakaan video:** unggah banyak file (MP4/MOV/MKV/WEBM/AVI), validasi FFprobe, thumbnail, duplikat (sha256), cari/filter/urut, ganti nama, hapus.
+- **Dashboard & diagnostik:** CPU/RAM/disk, GPU NVIDIA (`nvidia-smi`), NVENC (uji encode sungguhan), kompatibilitas CUDA untuk faster-whisper, model di memori (dapat dilepas), batas worker/VRAM/mode CPU.
+- **Transkripsi:** faster-whisper, timestamp per kata, pemisahan kalimat, bahasa Indonesia/Inggris/otomatis, editor (edit, pisah, gabung, hapus, cari-ganti), pencarian, ekspor SRT/VTT/TXT, antrean persisten + batal. Model diunduh hanya setelah persetujuan (ukuran + ruang disk ditampilkan).
+- **Smart Crop & Render:** klip manual dari video, face tracking OpenCV (multi-wajah, pemilihan pembicara, smoothing, kamera dikunci bila pembicara diam), layout isi/letterbox/split, crop manual/center, subtitle ASS karaoke (8 preset), pratinjau frame 9:16, render H.264/H.265, verifikasi hasil dengan FFprobe, unduh.
+- **Encoder jujur:** NVENC dipakai hanya bila lolos uji encode; jika tidak, CPU — dan UI menampilkan encoder yang benar-benar dipakai.
 
-## Instalasi (Windows)
-Prasyarat: Python 3.11+, Node.js 20+, FFmpeg di PATH.
+## Instalasi (Windows 10/11)
+Prasyarat: Python 3.11–3.13, Node.js 20+, FFmpeg + FFprobe di PATH. GPU NVIDIA opsional (driver dengan CUDA 12).
 ```
-scripts\install.bat
-scripts\start.bat
+scripts\install.bat      :: venv, dependensi, .env, folder, database SQLite, build frontend, pemeriksaan GPU/CUDA/Ollama
+scripts\start.bat        :: verifikasi layanan, jalankan Ollama bila ada, server, buka browser
+scripts\stop.bat
+scripts\check_gpu.bat
+scripts\download_models.bat   :: unduh model dengan persetujuan; progres + ukuran ditampilkan
 ```
-Buka http://127.0.0.1:8000. Berhenti: `scripts\stop.bat`. Cek GPU: `scripts\check_gpu.bat`.
+Buka http://127.0.0.1:8000. Model Whisper bawaan `large-v3-turbo` (±1.6 GB) diunduh dari halaman **Transkripsi** atau `download_models.bat` — tidak pernah otomatis.
 
-## Pengembangan
+## Pengembangan & tes
 ```
-cd backend && pip install -r requirements-dev.txt && python -m pytest
-cd frontend && npm install && npm run dev   # proxy ke backend :8000
+cd backend && pip install -r requirements-dev.txt && python -m pytest        # backend + integrasi
+cd frontend && npm install && npm run dev && npm test
 ```
+Catatan: pakai OpenCV 4.x (sudah dikunci di requirements). Build 5.x dari PyPI tidak menyertakan file cascade wajah.
 
 ## Keamanan
-Bind 127.0.0.1, cek Origin pada WebSocket/CORS, nama file disanitasi dan disimpan acak, anti path traversal,
-unduhan hanya dari folder aplikasi, tidak ada eksekusi shell dari input pengguna.
-Gunakan hanya video yang Anda miliki atau berhak olah.
+Bind 127.0.0.1; cek Origin pada WebSocket/CORS; nama file disanitasi dan disimpan acak; anti path traversal; unduhan hanya dari folder `storage/outputs`; argumen FFmpeg dibangun
+sebagai list (tanpa shell); teks subtitle disanitasi dari injeksi override ASS; log JSON menyamarkan rahasia. Gunakan hanya video yang Anda miliki atau berhak olah.

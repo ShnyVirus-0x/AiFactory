@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
 import { ComingSoon } from "./pages/ComingSoon";
+import { ClipStudio } from "./pages/ClipStudio";
 import { Dashboard } from "./pages/Dashboard";
 import { Projects } from "./pages/Projects";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -23,8 +24,8 @@ export default function App() {
         {soon("analysis", "Analisis AI", "clip_detection", "Transkripsi (Whisper) dan deteksi klip viral dengan Qwen lokal.")}
         {soon("editor", "Editor Klip", "clip_editor", "Pratinjau, potong, bagi, gabung, timeline, dan undo/redo.")}
         {soon("subtitles", "Studio Subtitle", "subtitle_studio", "Subtitle per kata dengan highlight, preset, dan renderer ASS.")}
-        {soon("crop", "Smart Crop", "face_tracking", "Deteksi dan pelacakan wajah dengan pergerakan kamera virtual yang halus.")}
-        {soon("split", "Split Screen", "split_screen", "Template podcast + gameplay, atas/bawah, kiri/kanan.")}
+        <Route path="crop" element={<ClipStudio />} />
+        <Route path="split" element={<Navigate to="/crop" replace />} />
         {soon("templates", "Template", "templates", "Simpan dan terapkan template pengeditan ke banyak klip.")}
         {soon("thumbnails", "Studio Thumbnail", "thumbnails", "Pembuatan thumbnail lokal dengan pemilihan frame berbasis wajah.")}
         {soon("renderer", "Batch Renderer", "batch_renderer", "Antrean persisten, rendering NVENC, jeda/lanjut/ulang.")}

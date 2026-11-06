@@ -190,3 +190,61 @@ export interface TranscriptFull extends TranscriptInfo {
   total_matches: number;
   segments: Segment[];
 }
+
+export interface Clip {
+  id: string;
+  project_id: string;
+  video_id: string;
+  title: string;
+  start_time: number;
+  end_time: number;
+  duration: number;
+  transcript: string;
+  approved: boolean;
+  category: string;
+}
+export interface CaptionSpec {
+  enabled: boolean;
+  preset: string;
+  words_per_line: number;
+  font: string;
+  size: number;
+  y: number;
+}
+export interface RenderSpec {
+  layout: "fill" | "letterbox" | "split";
+  crop_mode: "face" | "center" | "manual";
+  manual_x: number;
+  background: "blur" | "black";
+  split_top_ratio: number;
+  cam_rect: { x: number; y: number; w: number; h: number };
+  codec: "h264" | "h265";
+  crf: number;
+  loudnorm: boolean;
+  captions: CaptionSpec;
+  title_overlay: string | null;
+  title_seconds: number;
+}
+export interface CropAnalysis {
+  available: boolean;
+  reason: string | null;
+  note: string;
+  samples?: number;
+  frames_with_face?: number;
+  max_faces?: number;
+  travel?: number;
+  static?: boolean;
+  track: { t: number; x: number }[];
+}
+export interface RenderJob {
+  id: string;
+  clip_id: string;
+  status: "queued" | "running" | "done" | "failed" | "cancelled";
+  progress: number;
+  has_output: boolean;
+  download_url: string | null;
+  error_message: string | null;
+  encoder: string;
+  uses_gpu: boolean;
+  output_info: { width: number; height: number; fps: number; video_codec: string; has_audio: boolean; duration: number; size: number; crop_note?: string } | null;
+}

@@ -1,4 +1,4 @@
-import type { ApiErrorBody, Dashboard, GpuReport, Health, LimitsInfo, Limits, LoadedModel, Project, Resources, Segment, TranscriptFull, TranscriptInfo, TranscriptionJob, UploadResult, Video, WhisperModel } from "../types";
+import type { ApiErrorBody, Clip, CropAnalysis, RenderJob, RenderSpec, Dashboard, GpuReport, Health, LimitsInfo, Limits, LoadedModel, Project, Resources, Segment, TranscriptFull, TranscriptInfo, TranscriptionJob, UploadResult, Video, WhisperModel } from "../types";
 
 export class ApiError extends Error {
   code: string;
@@ -86,6 +86,17 @@ export const api = {
   deleteSegment: (id: number) => req<void>(`/transcripts/segments/${id}`, { method: "DELETE" }),
   replaceAll: (id: string, b: { find: string; replace: string; case_sensitive: boolean; whole_word: boolean }) => req<{ replaced: number }>(`/transcripts/${id}/replace`, json("POST", b)),
   exportUrl: (id: string, fmt: "srt" | "vtt" | "txt") => `/api/transcripts/${id}/export?format=${fmt}`,
+  clips: (videoId: string) => req<Clip[]>(`/clips?video_id=${videoId}`),
+  createClip: (videoId: string, b: { start_time: number; end_time: number; title: string }) => req<Clip>(`/videos/${videoId}/clips`, json("POST", b)),
+  patchClip: (id: string, b: Partial<Pick<Clip, "title" | "start_time" | "end_time" | "approved">>) => req<Clip>(`/clips/${id}`, json("PATCH", b)),
+  deleteClip: (id: string) => req<void>(`/clips/${id}`, { method: "DELETE" }),
+  getEdit: (id: string) => req<RenderSpec>(`/clips/${id}/edit`),
+  putEdit: (id: string, spec: RenderSpec) => req<RenderSpec>(`/clips/${id}/edit`, json("PUT", spec)),
+  analyzeCrop: (id: string) => req<CropAnalysis>(`/clips/${id}/analyze-crop`, { method: "POST" }),
+  previewUrl: (id: string, t: number, nonce: number) => `/api/clips/${id}/preview?t=${t.toFixed(2)}&width=360&n=${nonce}`,
+  renderClip: (id: string) => req<{ id: string; status: string }>(`/clips/${id}/render`, { method: "POST" }),
+  renderJob: (id: string) => req<RenderJob>(`/jobs/${id}`),
+  cancelRender: (id: string) => req<RenderJob>(`/jobs/${id}/cancel`, { method: "POST" }),
   thumbUrl: (id: string) => `/api/videos/${id}/thumbnail`,
   streamUrl: (id: string) => `/api/videos/${id}/stream`,
 };
