@@ -7,6 +7,8 @@ import { Projects } from "./pages/Projects";
 import { SettingsPage } from "./pages/SettingsPage";
 import { Transcription } from "./pages/Transcription";
 import { VideoLibrary } from "./pages/VideoLibrary";
+import { Renderer } from "./pages/Renderer";
+import { Exports } from "./pages/Exports";
 
 const soon = (path: string, title: string, capability: string, description: string) => (
   <Route key={path} path={path} element={<ComingSoon title={title} capability={capability} description={description} />} />
@@ -28,8 +30,8 @@ export default function App() {
         <Route path="split" element={<Navigate to="/crop" replace />} />
         {soon("templates", "Template", "templates", "Simpan dan terapkan template pengeditan ke banyak klip.")}
         {soon("thumbnails", "Studio Thumbnail", "thumbnails", "Pembuatan thumbnail lokal dengan pemilihan frame berbasis wajah.")}
-        {soon("renderer", "Batch Renderer", "batch_renderer", "Antrean persisten, rendering NVENC, jeda/lanjut/ulang.")}
-        {soon("exports", "Export Center", "export_center", "Pratinjau, unduh, dan kelola hasil render.")}
+        <Route path="renderer" element={<Renderer />} />
+        <Route path="exports" element={<Exports />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -15,8 +15,8 @@ const NAV = [
   { to: "/crop", label: "Smart Crop & Render", icon: Crop, phase: 4 },
   { to: "/templates", label: "Template", icon: Boxes, phase: 5 },
   { to: "/thumbnails", label: "Studio Thumbnail", icon: Image, phase: 7 },
-  { to: "/renderer", label: "Batch Renderer", icon: BarChart3, phase: 6 },
-  { to: "/exports", label: "Export Center", icon: Download, phase: 6 },
+  { to: "/renderer", label: "Batch Renderer", icon: BarChart3, phase: 6, ready: true },
+  { to: "/exports", label: "Export Center", icon: Download, phase: 6, ready: true },
   { to: "/settings", label: "Pengaturan", icon: Settings, phase: 1 },
 ];
 
@@ -34,12 +34,12 @@ export function AppLayout() {
           </div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
-          {NAV.map(({ to, label, icon: Icon, phase }) => (
+          {NAV.map(({ to, label, icon: Icon, phase, ready }) => (
             <NavLink key={to} to={to} end={to === "/"}
               className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive ? "bg-brand/15 text-brand-2" : "text-mute hover:bg-panel-2 hover:text-ink"}`}>
               <Icon size={17} />
               <span className="flex-1">{label}</span>
-              {phase > 4 && <span className="rounded bg-panel-2 px-1.5 text-[10px] text-mute" title={`Tersedia pada Fase ${phase}`}>F{phase}</span>}
+              {phase > 4 && !ready && <span className="rounded bg-panel-2 px-1.5 text-[10px] text-mute" title={`Tersedia pada Fase ${phase}`}>F{phase}</span>}
             </NavLink>
           ))}
         </nav>

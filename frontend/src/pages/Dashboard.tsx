@@ -94,7 +94,7 @@ export function Dashboard() {
         </section>
         <section className="card">
           <h2 className="mb-3 text-sm font-semibold">Antrean pemrosesan <span className="ml-1 text-xs font-normal text-mute">({t.jobs_queued} menunggu)</span></h2>
-          {data.queue.length === 0 ? <p className="text-sm text-mute">Antrean kosong. Rendering massal tersedia pada Fase 6.</p> : (
+          {data.queue.length === 0 ? <p className="text-sm text-mute">Antrean kosong. Pilih klip di Batch Renderer untuk memulai.</p> : (
             <ul className="space-y-2 text-sm">{data.queue.map((j) => <li key={j.id}><Meter label={`${j.id.slice(0, 8)} · ${j.status}`} value={j.progress * 100} /></li>)}</ul>
           )}
         </section>

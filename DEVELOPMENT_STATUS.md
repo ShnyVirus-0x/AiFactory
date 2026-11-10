@@ -1,7 +1,7 @@
 # DEVELOPMENT STATUS
 
 ## Fase saat ini
-Fase 1 SELESAI · Fase 2 SELESAI (inferensi Whisper nyata BELUM terverifikasi) · Fase 4 SEBAGIAN · Fase 3, 5, 6, 7, 8 BELUM.
+Fase 1 SELESAI · Fase 2 SELESAI (inferensi Whisper nyata BELUM terverifikasi) · Fase 4 SEBAGIAN · Fase 6 SEBAGIAN · Fase 3, 5, 7, 8 BELUM.
 
 ## Selesai
 **Fase 1 (fondasi):** FastAPI + SQLite/Alembic (migrasi 0001–0003), proyek, unggah/perpustakaan video, dashboard, diagnostik GPU/NVENC/CUDA, batas sumber daya yang dapat diubah (disimpan di DB),
@@ -9,12 +9,14 @@ model manager (satu model besar di VRAM, unload, mode CPU/GPU/auto), log JSON te
 **Fase 2 (transkripsi):** katalog model Whisper + unduhan atomik dengan persetujuan, ekstraksi audio 16 kHz mono, adaptor faster-whisper (word timestamps, VAD), pemisahan kalimat, antrean persisten (batal, pemulihan saat start),
 editor transkrip (edit/pisah/gabung/hapus/cari-ganti/cari), ekspor SRT/VTT/TXT, UI.
 **Fase 4 (sebagian, dipindahkan dari ClipForge):** klip manual, deteksi wajah OpenCV, smart crop, subtitle ASS, layout fill/letterbox/split, pratinjau, render + verifikasi FFprobe, UI "Smart Crop & Render".
+**Fase 6 (sebagian):** batch render klip terpilih per proyek, antrean job dengan pembatalan, coba ulang job gagal, serta halaman Batch Renderer dan Export Center untuk pratinjau/unduh hasil.
 
 ## Hasil tes (dijalankan di sandbox Linux, CPU, tanpa GPU)
 - Backend pytest (`backend/tests`): **82 passed**
 - Integrasi server sungguhan (`tests/integration`): **1 passed, 1 skipped** (tes bind-loopback di-skip karena sandbox tak punya alamat non-loopback; BELUM terbukti di sini)
 - Total `python -m pytest` dari `backend/`: 83 passed, 1 skipped
 - Frontend vitest: **2 passed**; `tsc -b` dan `vite build` berhasil
+- Batch renderer (verifikasi lokal Windows): **3 passed** untuk antrean batch, validasi/skip job aktif, dan retry job gagal. Frontend build belum dijalankan di lingkungan ini karena `npm`/Node.js tidak tersedia.
 - Smoke test browser (Playwright): proyek → unggah → klip → analisis wajah → render → unduh, tanpa error konsol
 - Bukti nyata: wajah (gambar astronaut) tetap ada dalam hasil render pada awal DAN akhir saat wajah berpindah kiri→kanan; center crop memotong wajah; subtitle terbukti ter-burn (perbedaan piksel terkonsentrasi di area caption, warna highlight terdeteksi).
 
@@ -31,9 +33,9 @@ editor transkrip (edit/pisah/gabung/hapus/cari-ganti/cari), ekspor SRT/VTT/TXT, 
 - Kontrol kualitas video panjang (jam-an) belum diuji; transkripsi streaming per segmen dirancang untuk memori konstan tetapi tidak diukur.
 
 ## Belum tersedia (UI menampilkan "belum tersedia")
-Fase 3 deteksi klip AI (Qwen) · Fase 4 editor timeline · Fase 5 studio subtitle/template/watermark/branding · Fase 6 batch renderer/Export Center · Fase 7 diarization, thumbnail, judul AI, peningkatan audio · Fase 8 finalisasi.
+Fase 3 deteksi klip AI (Qwen) · Fase 4 editor timeline · Fase 5 studio subtitle/template/watermark/branding · Sisa Fase 6 (jeda/lanjut antrean dan fitur ekspor lanjutan) · Fase 7 diarization, thumbnail, judul AI, peningkatan audio · Fase 8 finalisasi.
 
 ## Langkah berikutnya
 1. Verifikasi di Windows RTX 4070 Ti: `install.bat`, `check_gpu.bat`, unduh `large-v3-turbo`, transkripsi video pendek nyata, render dengan NVENC (lihat badge encoder).
 2. Fase 3: klien Ollama + Qwen2.5 7B, jendela analisis tumpang tindih, skor 0–100 multi-dimensi, kandidat 10–30 klip.
-3. Fase 5: pindahkan watermark/BGM/hook SFX/template dari ClipForge; Fase 6: antrean batch persisten.
+3. Fase 5: pindahkan watermark/BGM/hook SFX/template dari ClipForge; lanjutkan Fase 6 dengan jeda/lanjut antrean setelah build frontend dapat diverifikasi.

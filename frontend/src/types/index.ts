@@ -239,6 +239,7 @@ export interface CropAnalysis {
 export interface RenderJob {
   id: string;
   clip_id: string;
+  clip_title: string;
   status: "queued" | "running" | "done" | "failed" | "cancelled";
   progress: number;
   has_output: boolean;
@@ -247,4 +248,6 @@ export interface RenderJob {
   encoder: string;
   uses_gpu: boolean;
   output_info: { width: number; height: number; fps: number; video_codec: string; has_audio: boolean; duration: number; size: number; crop_note?: string } | null;
+  created_at: string;
+  updated_at: string;
 }
