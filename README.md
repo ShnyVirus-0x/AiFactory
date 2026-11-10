@@ -2,49 +2,72 @@
 
 # AI Shorts Factory
 
-Studio pembuat video pendek yang berjalan **100% lokal** di Windows: transkripsi (faster-whisper), face tracking, subtitle per kata, dan render FFmpeg.
-Server hanya mengikat `127.0.0.1`; tanpa unggah ke cloud, tanpa API AI eksternal, tanpa analitik.
+AI Shorts Factory adalah aplikasi Windows untuk mengolah video panjang menjadi klip pendek. Prosesnya berjalan di komputer sendiri: transkripsi memakai faster-whisper, lalu klip bisa diatur, diberi subtitle, dan dirender dengan FFmpeg.
 
-> **Status jujur:** Fase 1–2 selesai, Fase 4 **sebagian** (Smart Crop & Render per klip), Fase 6 **sebagian** (Batch Renderer dan Export Center dasar). Deteksi klip AI (Qwen), editor timeline, template, thumbnail,
-> diarization, dan jeda/lanjut antrean belum tersedia dan tampil "belum tersedia" di UI. Detail: `DEVELOPMENT_STATUS.md`.
+Server hanya berjalan di `127.0.0.1`. Video tidak diunggah ke cloud dan aplikasi tidak memakai API AI eksternal atau analitik.
 
-## Fitur yang berfungsi
-- **Proyek & perpustakaan video:** unggah banyak file (MP4/MOV/MKV/WEBM/AVI), validasi FFprobe, thumbnail, duplikat (sha256), cari/filter/urut, ganti nama, hapus.
-- **Dashboard & diagnostik:** CPU/RAM/disk, GPU NVIDIA (`nvidia-smi`), NVENC (uji encode sungguhan), kompatibilitas CUDA untuk faster-whisper, model di memori (dapat dilepas), batas worker/VRAM/mode CPU.
-- **Transkripsi:** faster-whisper, timestamp per kata, pemisahan kalimat, bahasa Indonesia/Inggris/otomatis, editor (edit, pisah, gabung, hapus, cari-ganti), pencarian, ekspor SRT/VTT/TXT, antrean persisten + batal. Model diunduh hanya setelah persetujuan (ukuran + ruang disk ditampilkan).
-- **Smart Crop & Render:** klip manual dari video, face tracking OpenCV (multi-wajah, pemilihan pembicara, smoothing, kamera dikunci bila pembicara diam), layout isi/letterbox/split, crop manual/center, subtitle ASS karaoke (8 preset), pratinjau frame 9:16, render H.264/H.265, verifikasi hasil dengan FFprobe, unduh.
-- **Batch Renderer & Export Center:** antrekan beberapa klip terpilih per proyek, batalkan job aktif, coba ulang job gagal, pratinjau video selesai, dan unduh hasil render. Jeda/lanjut antrean belum tersedia.
-- **Encoder jujur:** NVENC dipakai hanya bila lolos uji encode; jika tidak, CPU — dan UI menampilkan encoder yang benar-benar dipakai.
+## Kondisi saat ini
 
-## Instalasi (Windows 10/11)
-Prasyarat: Python 3.11–3.13, Node.js 20+, FFmpeg + FFprobe di PATH. GPU NVIDIA opsional (driver dengan CUDA 12).
+Proyek, perpustakaan video, transkripsi, dan fitur dasar Smart Crop & Render sudah tersedia. Batch render dan Export Center juga sudah ada dalam bentuk dasar. Deteksi klip otomatis dengan Qwen, editor timeline, template, thumbnail, diarization, dan kontrol jeda/lanjut antrean belum tersedia. Catatan fitur dan pengujian ada di [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md).
+
+## Yang bisa dilakukan
+
+- Mengelola proyek dan video: unggah beberapa file MP4, MOV, MKV, WEBM, atau AVI; cari, filter, urutkan, ganti nama, dan hapus video.
+- Melihat kondisi komputer: CPU, RAM, disk, GPU NVIDIA, NVENC, dan kompatibilitas CUDA. Aplikasi hanya memakai NVENC jika uji encode berhasil.
+- Membuat transkrip dengan faster-whisper, mengedit teks dan timestamp, lalu mengekspornya sebagai SRT, VTT, atau TXT. Model baru diunduh setelah pengguna menyetujui ukuran unduhan dan kebutuhan ruang disk.
+- Membuat klip secara manual, mengatur crop dan layout, menambahkan subtitle, lalu merender dengan H.264 atau H.265.
+- Mengantrekan beberapa klip untuk dirender dan mengunduh hasilnya dari Export Center.
+
+Rincian fitur yang belum selesai dan batasan yang sudah diketahui dicatat di [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md).
+
+## Menjalankan di Windows
+
+Prasyarat: Windows 10/11, Python 3.11–3.13, Node.js 20+, serta FFmpeg dan FFprobe di `PATH`. GPU NVIDIA tidak wajib.
+
+```bat
+scripts\install.bat
+scripts\start.bat
 ```
-scripts\install.bat      :: venv, dependensi, .env, folder, database SQLite, build frontend, pemeriksaan GPU/CUDA/Ollama
-scripts\start.bat        :: verifikasi layanan, jalankan Ollama bila ada, server, buka browser
-scripts\stop.bat
+
+`install.bat` menyiapkan virtual environment, dependensi, konfigurasi, database, dan frontend. Setelah `start.bat` selesai, buka http://127.0.0.1:8000. Untuk menghentikan aplikasi, jalankan `scripts\stop.bat`.
+
+Model Whisper bawaan adalah `large-v3-turbo` (sekitar 1,6 GB). Unduh dari halaman **Transkripsi** atau jalankan `scripts\download_models.bat`; model tidak diunduh otomatis.
+
+Skrip lain yang tersedia:
+
+```text
 scripts\check_gpu.bat
-scripts\download_models.bat   :: unduh model dengan persetujuan; progres + ukuran ditampilkan
+scripts\download_models.bat
 ```
-Buka http://127.0.0.1:8000. Model Whisper bawaan `large-v3-turbo` (±1.6 GB) diunduh dari halaman **Transkripsi** atau `download_models.bat` — tidak pernah otomatis.
 
-### Menggunakan salinan dari GitHub
+## Menggunakan salinan dari GitHub
 
-Di Windows, pasang prasyarat di atas, lalu jalankan dari PowerShell:
-```
+Jalankan perintah berikut dari PowerShell setelah memasang prasyarat:
+
+```powershell
 git clone https://github.com/ShnyVirus-0x/AiFactory.git
 cd AiFactory
 scripts\install.bat
 scripts\start.bat
 ```
-Setelah aplikasi terbuka, buat proyek, unggah video yang Anda miliki atau berhak olah, buat klip, lalu render. Batch Renderer menerima klip pilihan dari satu proyek; hasil yang selesai dapat dilihat dan diunduh di Export Center. Aplikasi berjalan lokal di komputer pengguna dan bukan situs demo yang di-host di GitHub.
 
-## Pengembangan & tes
-```
-cd backend && pip install -r requirements-dev.txt && python -m pytest        # backend + integrasi
-cd frontend && npm install && npm run dev && npm test
-```
-Catatan: pakai OpenCV 4.x (sudah dikunci di requirements). Build 5.x dari PyPI tidak menyertakan file cascade wajah.
+Buat proyek, unggah video yang Anda miliki atau berhak olah, buat klip, lalu render. Aplikasi berjalan di komputer Anda; repositori GitHub ini bukan situs demo yang di-host.
 
-## Keamanan
-Bind 127.0.0.1; cek Origin pada WebSocket/CORS; nama file disanitasi dan disimpan acak; anti path traversal; unduhan hanya dari folder `storage/outputs`; argumen FFmpeg dibangun
-sebagai list (tanpa shell); teks subtitle disanitasi dari injeksi override ASS; log JSON menyamarkan rahasia. Gunakan hanya video yang Anda miliki atau berhak olah.
+## Pengembangan dan tes
+
+Dari folder proyek:
+
+```powershell
+python -m pip install -r backend\requirements-dev.txt
+python -m pytest backend\tests tests\integration -q
+npm --prefix frontend install
+npm --prefix frontend test
+```
+
+Gunakan OpenCV 4.x. Versi 5.x dari PyPI tidak menyertakan cascade wajah yang dipakai aplikasi.
+
+## Catatan keamanan
+
+Server hanya bind ke `127.0.0.1`. Aplikasi memeriksa Origin untuk WebSocket/CORS, menyimpan nama file dengan nama acak, membatasi akses file agar tidak keluar dari folder yang diizinkan, dan hanya menyediakan unduhan dari `storage/outputs`. Argumen FFmpeg dikirim tanpa shell, teks subtitle dibersihkan sebelum ditulis ke ASS, dan log JSON menyamarkan rahasia.
+
+Gunakan hanya video yang Anda miliki atau berhak olah.

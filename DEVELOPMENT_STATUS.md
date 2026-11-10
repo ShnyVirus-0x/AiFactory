@@ -1,41 +1,42 @@
-# DEVELOPMENT STATUS
+# Status pengembangan
 
-## Fase saat ini
-Fase 1 SELESAI · Fase 2 SELESAI (inferensi Whisper nyata BELUM terverifikasi) · Fase 4 SEBAGIAN · Fase 6 SEBAGIAN · Fase 3, 5, 7, 8 BELUM.
+Dokumen ini mencatat fitur yang sudah tersedia, hasil pengujian yang pernah dijalankan, dan pekerjaan yang masih perlu dilakukan. Status pengujian di bawah bukan jaminan bahwa fitur tersebut sudah diuji pada setiap komputer.
 
-## Selesai
-**Fase 1 (fondasi):** FastAPI + SQLite/Alembic (migrasi 0001–0003), proyek, unggah/perpustakaan video, dashboard, diagnostik GPU/NVENC/CUDA, batas sumber daya yang dapat diubah (disimpan di DB),
-model manager (satu model besar di VRAM, unload, mode CPU/GPU/auto), log JSON terstruktur, WebSocket event, skrip Windows (install/start/stop/check_gpu/download_models), git.
-**Fase 2 (transkripsi):** katalog model Whisper + unduhan atomik dengan persetujuan, ekstraksi audio 16 kHz mono, adaptor faster-whisper (word timestamps, VAD), pemisahan kalimat, antrean persisten (batal, pemulihan saat start),
-editor transkrip (edit/pisah/gabung/hapus/cari-ganti/cari), ekspor SRT/VTT/TXT, UI.
-**Fase 4 (sebagian, dipindahkan dari ClipForge):** klip manual, deteksi wajah OpenCV, smart crop, subtitle ASS, layout fill/letterbox/split, pratinjau, render + verifikasi FFprobe, UI "Smart Crop & Render".
-**Fase 6 (sebagian):** batch render klip terpilih per proyek, antrean job dengan pembatalan, coba ulang job gagal, serta halaman Batch Renderer dan Export Center untuk pratinjau/unduh hasil.
+## Fitur yang sudah tersedia
 
-## Hasil tes (dijalankan di sandbox Linux, CPU, tanpa GPU)
-- Backend pytest (`backend/tests`): **82 passed**
-- Integrasi server sungguhan (`tests/integration`): **1 passed, 1 skipped** (tes bind-loopback di-skip karena sandbox tak punya alamat non-loopback; BELUM terbukti di sini)
-- Total `python -m pytest` dari `backend/`: 83 passed, 1 skipped
-- Frontend vitest: **2 passed**; `tsc -b` dan `vite build` berhasil
-- Batch renderer (verifikasi lokal Windows): **3 passed** untuk antrean batch, validasi/skip job aktif, dan retry job gagal. Frontend build belum dijalankan di lingkungan ini karena `npm`/Node.js tidak tersedia.
-- Smoke test browser (Playwright): proyek → unggah → klip → analisis wajah → render → unduh, tanpa error konsol
-- Bukti nyata: wajah (gambar astronaut) tetap ada dalam hasil render pada awal DAN akhir saat wajah berpindah kiri→kanan; center crop memotong wajah; subtitle terbukti ter-burn (perbedaan piksel terkonsentrasi di area caption, warna highlight terdeteksi).
+- **Proyek dan perpustakaan video:** FastAPI, SQLite/Alembic (migrasi 0001–0003), unggah dan validasi video, metadata, thumbnail, pencarian, serta operasi proyek dan video.
+- **Diagnostik dan pengelolaan sumber daya:** informasi CPU, RAM, disk, GPU/NVENC/CUDA, pengaturan batas sumber daya, dan pengelolaan model yang dimuat.
+- **Transkripsi:** katalog dan unduhan model Whisper dengan persetujuan, ekstraksi audio 16 kHz mono, adaptor faster-whisper dengan word timestamps dan VAD, antrean persisten, editor transkrip, serta ekspor SRT/VTT/TXT.
+- **Smart Crop & Render:** pembuatan klip manual, deteksi wajah OpenCV, crop dan layout, subtitle ASS, pratinjau, render, serta pemeriksaan hasil dengan FFprobe.
+- **Batch Renderer dan Export Center (dasar):** antrean beberapa klip per proyek, pembatalan job, retry untuk job gagal, pratinjau, dan unduhan hasil.
 
-## BELUM diverifikasi / keterbatasan jujur
-- **Whisper nyata:** sandbox tidak bisa mengunduh model (huggingface.co diblokir). Tes memakai test-double pada antarmuka `Transcriber`; adaptor faster-whisper diuji dengan model tiruan (tanpa inferensi). Akurasi timestamp Whisper TIDAK terukur; yang terukur: durasi audio hasil ekstraksi (±0.15 dtk) dan validasi struktur timestamp.
-- **GPU/NVENC/CUDA:** tidak ada GPU di sandbox. Logika pemilihan encoder diuji dengan monkeypatch; encode NVENC, HEVC NVENC, dan registrasi DLL CUDA di Windows (`register_cuda_dlls`) belum pernah dijalankan.
-- **Skrip `.bat`:** ditulis dan ditinjau, belum dijalankan di Windows.
-- **Ollama/Qwen:** belum diintegrasikan (Fase 3). Hanya status koneksi yang diperiksa.
-- Deteksi wajah memakai Haar cascade: hanya andal untuk wajah frontal; wajah menyamping/tertutup bisa terlewat. Model yang lebih kuat belum ada.
-- Punctuation: mengandalkan keluaran Whisper (tidak ada model tanda baca terpisah).
-- Split screen baru layout dasar dari SATU sumber (kamera atas + layar bawah). Unggah video tambahan/gameplay, garis pembatas, jarak: belum ada.
-- Editor klip belum punya timeline/waveform/undo-redo/gabung klip. Watermark/BGM/template (Fase 5) belum dipindahkan dari ClipForge.
-- Penghapusan aman (overwrite) belum ada; hapus biasa.
-- Kontrol kualitas video panjang (jam-an) belum diuji; transkripsi streaming per segmen dirancang untuk memori konstan tetapi tidak diukur.
+## Hasil pengujian yang tercatat
 
-## Belum tersedia (UI menampilkan "belum tersedia")
-Fase 3 deteksi klip AI (Qwen) · Fase 4 editor timeline · Fase 5 studio subtitle/template/watermark/branding · Sisa Fase 6 (jeda/lanjut antrean dan fitur ekspor lanjutan) · Fase 7 diarization, thumbnail, judul AI, peningkatan audio · Fase 8 finalisasi.
+Pengujian berikut dijalankan di lingkungan sandbox Linux, menggunakan CPU dan tanpa GPU:
 
-## Langkah berikutnya
-1. Verifikasi di Windows RTX 4070 Ti: `install.bat`, `check_gpu.bat`, unduh `large-v3-turbo`, transkripsi video pendek nyata, render dengan NVENC (lihat badge encoder).
-2. Fase 3: klien Ollama + Qwen2.5 7B, jendela analisis tumpang tindih, skor 0–100 multi-dimensi, kandidat 10–30 klip.
-3. Fase 5: pindahkan watermark/BGM/hook SFX/template dari ClipForge; lanjutkan Fase 6 dengan jeda/lanjut antrean setelah build frontend dapat diverifikasi.
+- Backend: 82 tes lulus.
+- Integrasi server: 1 tes lulus dan 1 tes dilewati. Tes bind-loopback dilewati karena sandbox tidak memiliki alamat non-loopback.
+- Seluruh tes Python dari `backend/`: 83 lulus dan 1 dilewati.
+- Frontend: 2 tes Vitest lulus; `tsc -b` dan `vite build` berhasil.
+- Smoke test Playwright: alur proyek, unggah, pembuatan klip, analisis wajah, render, dan unduh selesai tanpa error konsol.
+- Pada sampel pengujian, wajah tetap terlihat di awal dan akhir hasil render saat berpindah dari kiri ke kanan. Center crop memotong wajah; perbedaan piksel juga mengonfirmasi subtitle ter-render di area caption.
+
+Pengujian batch renderer di Windows mencatat 3 tes lulus untuk antrean, validasi atau skip job aktif, dan retry job gagal. Build frontend belum dijalankan di lingkungan Windows tersebut karena Node.js/npm tidak tersedia.
+
+## Yang belum diverifikasi atau belum tersedia
+
+- **Inferensi Whisper sungguhan:** model tidak bisa diunduh di sandbox karena akses ke huggingface.co diblokir. Adaptor diuji dengan model tiruan, bukan inferensi sungguhan. Akurasi timestamp belum diukur; yang diuji hanya durasi audio hasil ekstraksi (selisih sekitar 0,15 detik) dan struktur timestamp.
+- **GPU, NVENC, dan CUDA di Windows:** tidak ada GPU di sandbox. Pemilihan encoder diuji dengan monkeypatch, tetapi encode NVENC/HEVC NVENC dan registrasi DLL CUDA Windows belum diuji.
+- **Skrip Windows:** file `.bat` sudah ditulis dan ditinjau, tetapi belum dijalankan dalam pengujian yang tercatat.
+- **Deteksi klip otomatis:** integrasi Ollama/Qwen belum ada; saat ini yang diperiksa hanya status koneksinya.
+- **Deteksi wajah:** memakai Haar cascade dan lebih cocok untuk wajah frontal. Wajah menyamping atau tertutup bisa terlewat.
+- **Editor dan layout lanjutan:** editor belum memiliki timeline, waveform, undo/redo, atau penggabungan klip. Split screen masih berupa layout dasar dari satu sumber; unggah sumber gameplay terpisah dan pengaturan pembatas belum tersedia.
+- **Fitur produksi lain:** template, watermark, BGM, thumbnail, diarization, judul AI, dan peningkatan audio belum tersedia. Antrean juga belum mendukung jeda/lanjut.
+- **Video berdurasi panjang:** kualitas dan penggunaan memori untuk video berjam-jam belum diukur. Transkripsi dirancang untuk memproses audio per segmen.
+- **Penghapusan file:** penghapusan aman dengan overwrite belum diterapkan.
+
+## Berikutnya
+
+1. Jalankan instalasi dan skrip pemeriksaan GPU di Windows, lalu uji transkripsi model Whisper dan render NVENC dengan video pendek.
+2. Jika diteruskan, integrasikan analisis klip menggunakan Ollama/Qwen dan uji hasilnya pada video nyata.
+3. Lanjutkan editor timeline dan fitur produksi seperti template, watermark, dan BGM; lengkapi kontrol jeda/lanjut antrean.
