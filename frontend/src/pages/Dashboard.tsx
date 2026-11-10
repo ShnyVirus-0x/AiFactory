@@ -1,5 +1,5 @@
-import { Activity, Clapperboard, Cpu, FolderKanban, HardDrive, MemoryStick, MonitorPlay, Plus, Thermometer, Upload, Video, XCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Activity, Clapperboard, Cpu, FolderKanban, HardDrive, MemoryStick, MonitorPlay, Scissors, Thermometer, Upload, Video, XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge, Empty, ErrorBox, fmtBytes, fmtDate, Meter, PageHeader, Spinner } from "../components/ui";
 import { useAsync } from "../hooks/useAsync";
 import { api } from "../services/api";
@@ -49,7 +49,6 @@ function Hardware() {
 }
 
 export function Dashboard() {
-  const nav = useNavigate();
   const { data, error, loading, reload } = useAsync(api.dashboard);
   const health = useAsync(api.health);
   if (loading) return <Spinner />;
@@ -58,10 +57,20 @@ export function Dashboard() {
   return (
     <>
       <PageHeader title="Dashboard" subtitle="Ringkasan proyek, antrean, dan kondisi perangkat keras Anda (data nyata)."
-        actions={<>
-          <button className="btn btn-ghost" onClick={() => nav("/library?upload=1")}><Upload size={16} />Unggah cepat</button>
-          <button className="btn btn-primary" onClick={() => nav("/projects?new=1")}><Plus size={16} />Proyek baru</button>
-        </>} />
+      />
+      <section className="relative isolate mb-5 min-h-56 overflow-hidden rounded-2xl border border-line bg-gradient-to-br from-[#151c2d] via-[#122630] to-[#102c35] p-5 sm:p-7">
+        <img src="/dashboard-visual.svg" alt="" aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 h-full w-[62%] object-contain object-right opacity-80 sm:w-[55%] sm:opacity-100" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-[#151c2d] via-[#151c2d]/95 to-transparent" />
+        <div className="relative z-10 flex min-h-40 max-w-xl flex-col items-start justify-center">
+          <span className="mb-3 rounded-full border border-brand/30 bg-brand/10 px-2.5 py-1 text-[11px] font-medium text-brand-2">Studio video lokal</span>
+          <h2 className="max-w-md text-2xl font-semibold leading-tight sm:text-3xl">Dari video panjang jadi klip siap dibagikan</h2>
+          <p className="mt-2 max-w-md text-sm text-mute">Unggah video, pilih momen terbaik, atur crop dan subtitle, lalu render langsung di komputer Anda.</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link className="btn btn-primary" to="/library?upload=1"><Upload size={16} />Unggah video</Link>
+            <Link className="btn btn-ghost" to="/crop"><Scissors size={16} />Buka Smart Crop</Link>
+          </div>
+        </div>
+      </section>
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <Stat icon={FolderKanban} label="Total proyek" value={t.projects} />
         <Stat icon={Video} label="Video diunggah" value={t.videos} />

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">Alur video menjadi klip pendek</title>
+  <desc id="description">Video sumber dipotong menjadi klip vertikal dengan subtitle.</desc>
+  <defs>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#172943"/>
+      <stop offset="1" stop-color="#214b59"/>
+    </linearGradient>
+    <linearGradient id="caption" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#8ce7d2"/>
+      <stop offset="1" stop-color="#8fb8ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#020712" flood-opacity=".42"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)" transform="rotate(-7 167 181)">
+    <rect x="47" y="62" width="240" height="240" rx="22" fill="#121a29" stroke="#43516a" stroke-width="2"/>
+    <rect x="61" y="76" width="212" height="188" rx="13" fill="url(#screen)"/>
+    <path d="M61 215c45-47 72-13 100-65 19-36 57-37 112-2v116H61z" fill="#357c88"/>
+    <circle cx="163" cy="142" r="31" fill="#edc5a5"/>
+    <path d="M118 228c4-48 21-71 45-71s42 23 47 71" fill="#d77e76"/>
+    <rect x="78" y="238" width="67" height="9" rx="4.5" fill="#6ee7d2" opacity=".8"/>
+    <rect x="151" y="238" width="44" height="9" rx="4.5" fill="#b9c9e8" opacity=".55"/>
+    <rect x="201" y="238" width="54" height="9" rx="4.5" fill="#b9c9e8" opacity=".32"/>
+    <path d="M76 285h178" stroke="#303b50" stroke-width="5" stroke-linecap="round"/>
+    <path d="M76 285h106" stroke="#64a5ff" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="182" cy="285" r="7" fill="#dce8ff"/>
+  </g>
+  <path d="M308 171h74m-19-19 20 19-20 19" stroke="#8ce7d2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g filter="url(#shadow)" transform="rotate(6 482 178)">
+    <rect x="397" y="43" width="169" height="280" rx="25" fill="#111a2b" stroke="#7285a4" stroke-width="2"/>
+    <rect x="409" y="60" width="145" height="246" rx="15" fill="url(#screen)"/>
+    <path d="M409 228c29-35 45-15 69-57 18-31 45-31 76-5v140H409z" fill="#357c88"/>
+    <circle cx="480" cy="151" r="26" fill="#edc5a5"/>
+    <path d="M444 231c4-39 17-57 36-57s33 18 37 57" fill="#d77e76"/>
+    <rect x="422" y="242" width="119" height="43" rx="9" fill="#0c1421" fill-opacity=".92"/>
+    <rect x="435" y="252" width="91" height="8" rx="4" fill="url(#caption)"/>
+    <rect x="450" y="266" width="62" height="6" rx="3" fill="#f3f5fa" opacity=".78"/>
+    <rect x="456" y="46" width="51" height="5" rx="2.5" fill="#66738a"/>
+    <circle cx="481" cy="296" r="3" fill="#8ce7d2"/>
+  </g>
+</svg>
