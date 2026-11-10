@@ -1,3 +1,5 @@
+![AI Shorts Factory — local-first video repurposing studio](docs/images/ai-shorts-factory-banner.svg)
+
 # AI Shorts Factory
 
 Studio pembuat video pendek yang berjalan **100% lokal** di Windows: transkripsi (faster-whisper), face tracking, subtitle per kata, dan render FFmpeg.
