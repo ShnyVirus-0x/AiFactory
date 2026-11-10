@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..config import get_settings
 from ..models import ActivityLog, Clip, Project, RenderJob, Template
-from ..utils.errors import AppError, not_found
+from ..utils.errors import AppError, not_available, not_found
 from ..utils.events import hub
 from ..utils.files import is_within
 from ..workers import render_worker

@@ -1,6 +1,7 @@
 """Fase 4 (awal): face tracking, smart crop, subtitle ASS, renderer. Seluruh tes render memakai FFmpeg/FFprobe/OpenCV NYATA.
 Wajah nyata berasal dari gambar 'astronaut' (scikit-image). NVENC TIDAK diuji (sandbox tanpa GPU) -- yang diuji adalah pemilihan
 encoder yang jujur (jatuh ke CPU, atau gagal jelas pada mode GPU)."""
+import shutil
 import subprocess
 import threading
 import time
@@ -10,6 +11,9 @@ import pytest
 
 cv2 = pytest.importorskip("cv2")
 skdata = pytest.importorskip("skimage.data")
+
+FFMPEG_OK = shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
+needs_ffmpeg = pytest.mark.skipif(not FFMPEG_OK, reason="FFmpeg/FFprobe tidak ditemukan di PATH")
 
 from app.schemas.render import CaptionSpec, RenderSpec  # noqa: E402
 from app.services import face_detection as fd  # noqa: E402
@@ -21,6 +25,8 @@ from app.services import subtitle as sub  # noqa: E402
 # ---------------------------------------------------------------- fixture: video dengan wajah nyata bergerak kiri -> kanan
 @pytest.fixture(scope="session")
 def face_video(tmp_root) -> Path:
+    if not FFMPEG_OK:
+        pytest.skip("FFmpeg tidak ditemukan di PATH; tes render video dilewati")
     import numpy as np
 
     img = cv2.cvtColor(skdata.astronaut(), cv2.COLOR_RGB2BGR)  # 512x512; wajah ±(177..272, 66..161)
@@ -124,6 +130,8 @@ def test_caption_font_validation():
 
 # ---------------------------------------------------------------- encoder jujur
 def test_encoder_selection_is_honest(monkeypatch):
+    # Unit test logika pemilihan: ketersediaan encoder CPU di build FFmpeg di-mock agar tidak bergantung pada FFmpeg terpasang.
+    monkeypatch.setattr(rd, "_has_encoder", lambda ff, name: True)
     monkeypatch.setattr(rd.gpu_monitor, "nvenc_status", lambda *a, **k: {"available": False, "h264": False, "hevc": False, "reason": "tidak ada GPU"})
     assert rd.pick_encoder("h264", "auto")[:2] == ("libx264", False)
     assert rd.pick_encoder("h264", "cpu")[:2] == ("libx264", False)
@@ -135,6 +143,7 @@ def test_encoder_selection_is_honest(monkeypatch):
     assert rd.pick_encoder("h265", "auto")[:2] == ("libx265", False)  # HEVC NVENC tidak ada -> CPU, tidak berpura-pura GPU
 
 
+@needs_ffmpeg
 def test_run_ffmpeg_cancel_is_prompt(tmp_path):
     cmd = ["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=60:duration=600", "-c:v", "libx264", "-preset", "veryslow",
            "-progress", "pipe:1", "-nostats", "-f", "null", "-"]

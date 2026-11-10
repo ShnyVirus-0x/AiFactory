@@ -83,16 +83,24 @@ def test_resources_are_real(client):
 
 
 def test_health_and_capabilities(client):
+    import shutil
+
     h = client.get("/api/system/health").json()
     checks = {c["key"]: c for c in h["checks"]}
-    assert checks["ffmpeg"]["ok"] and checks["ffprobe"]["ok"] and h["status"] == "ok"
+    # Laporan kesehatan harus JUJUR sesuai lingkungan: ok bila FFmpeg/FFprobe ada, degraded bila tidak.
+    ff_ok = shutil.which("ffmpeg") is not None
+    fp_ok = shutil.which("ffprobe") is not None
+    assert checks["ffmpeg"]["ok"] is ff_ok and checks["ffprobe"]["ok"] is fp_ok
+    assert h["status"] == ("ok" if ff_ok and fp_ok else "degraded")
     assert checks["ollama"]["ok"] is False  # tidak ada Ollama di lingkungan uji -> dilaporkan apa adanya
     assert h["bind"].startswith("127.0.0.1")
     caps = {c["key"]: c for c in h["capabilities"]}
     assert caps["library"]["available"] is True
     assert caps["transcription"]["available"] is True and caps["transcription"]["phase"] == 2
     assert caps["clip_detection"]["available"] is False and caps["clip_detection"]["phase"] == 3
-    assert caps["batch_renderer"]["available"] is False  # tidak berpura-pura sudah ada
+    assert caps["batch_renderer"]["available"] is True  # batch render dasar sudah tersedia
+    assert caps["export_center"]["available"] is True
+    assert caps["templates"]["available"] is False  # tidak berpura-pura sudah ada
 
 
 def test_gpu_endpoint_shape(client):

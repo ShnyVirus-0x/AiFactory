@@ -25,6 +25,8 @@ def tmp_root() -> Path:
 
 
 def make_video(path: Path, seconds=6, audio=True, size="640x360", color=None) -> Path:
+    if shutil.which("ffmpeg") is None:
+        pytest.skip("FFmpeg tidak ditemukan di PATH; tes yang membutuhkan video sampel dilewati")
     src = f"testsrc2=size={size}:rate=25:duration={seconds}" if color is None else f"color=c={color}:size={size}:rate=25:duration={seconds}"
     cmd = ["ffmpeg", "-y", "-v", "error", "-f", "lavfi", "-i", src]
     if audio:

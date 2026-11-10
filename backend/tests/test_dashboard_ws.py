@@ -41,9 +41,12 @@ def test_dashboard_counts_render_jobs(client, sample_video):
 
 
 def test_unavailable_features_say_so(client, project):
+    # Batch render SUDAH tersedia: tanpa body yang valid harus mengembalikan 422, bukan 501.
     r = client.post(f"/api/projects/{project}/render")
-    assert r.status_code == 501 and r.json()["error"]["code"] == "not_available" and r.json()["error"]["details"]["phase"] == 6
-    assert client.post("/api/templates").status_code == 501
+    assert r.status_code == 422 and r.json()["error"]["code"] == "validation_error"
+    # Template masih belum tersedia dan harus mengatakannya dengan jelas.
+    t = client.post("/api/templates")
+    assert t.status_code == 501 and t.json()["error"]["code"] == "not_available" and t.json()["error"]["details"]["phase"] == 5
     assert client.get("/api/templates").json() == []
 
 

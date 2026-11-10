@@ -254,7 +254,7 @@ def test_safe_join_blocks_traversal(tmp_path):
 
 
 def test_stored_name_is_random_not_user_controlled(client, project, sample_video):
-    v = upload(client, project, [("../../hack.mp4", sample_video.read_bytes(), "video/mp4")]).json()["items"][0]["video"]
+    v = upload(client, project, [("../../,hack.mp4", sample_video.read_bytes(), "video/mp4")]).json()["items"][0]["video"]
     from app.database import SessionLocal
     from app.models import Video
 
