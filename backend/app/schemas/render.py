@@ -39,7 +39,7 @@ class RenderSpec(BaseModel):
     split_top_ratio: float = Field(default=0.5, ge=0.2, le=0.8)
     cam_rect: CamRect = CamRect()
     codec: Literal["h264", "h265"] = "h264"
-    crf: int = Field(default=20, ge=14, le=32)
+    crf: int = Field(default=18, ge=14, le=32)
     loudnorm: bool = False
     captions: CaptionSpec = CaptionSpec()
     title_overlay: str | None = Field(default=None, max_length=120)

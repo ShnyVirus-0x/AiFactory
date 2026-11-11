@@ -8,9 +8,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..config import get_settings
 from ..database import get_db
 from ..models import ActivityLog, Clip, ClipEdit, RenderJob, Transcript, TranscriptSegment, Video
 from ..schemas.render import RenderSpec
+from ..services import clip_detection
 from ..services import face_detection as fd
 from ..services import rendering as rd
 from ..services import smart_crop as sc
@@ -54,6 +56,9 @@ class ClipIn(BaseModel):
     start_time: float
     end_time: float
     title: str = Field(default="", max_length=200)
+    hook: str = Field(default="", max_length=1000)
+    score: float = Field(default=0, ge=0, le=100)
+    category: str = Field(default="manual", max_length=60)
 
 
 class ClipPatch(BaseModel):
@@ -61,6 +66,10 @@ class ClipPatch(BaseModel):
     start_time: float | None = None
     end_time: float | None = None
     approved: bool | None = None
+
+
+class SuggestClipsIn(BaseModel):
+    max_candidates: int = Field(default=12, ge=1, le=30)
 
 
 @router.get("/clips")
@@ -73,6 +82,34 @@ def list_clips(video_id: str | None = None, project_id: str | None = None, db: S
     return [_clip(c) for c in db.scalars(q.limit(500))]
 
 
+@router.post("/videos/{video_id}/suggest-clips")
+def suggest_clips(video_id: str, body: SuggestClipsIn, db: Session = Depends(get_db)) -> dict[str, Any]:
+    video = db.get(Video, video_id)
+    if not video:
+        raise not_found("Video")
+    transcript = db.scalar(
+        select(Transcript).where(Transcript.video_id == video_id).order_by(Transcript.created_at.desc())
+    )
+    if not transcript:
+        raise AppError(409, "transcript_required", "Buat transkrip video ini sebelum menganalisis kandidat klip.")
+    segments = db.scalars(
+        select(TranscriptSegment)
+        .where(TranscriptSegment.transcript_id == transcript.id)
+        .order_by(TranscriptSegment.start_time, TranscriptSegment.id)
+    ).all()
+    lines = [clip_detection.TranscriptLine(s.start_time, s.end_time, s.text) for s in segments]
+    try:
+        candidates = clip_detection.suggest_candidates(lines, video.duration, body.max_candidates)
+    except clip_detection.ClipDetectionError as exc:
+        raise AppError(503, "clip_analysis_unavailable", str(exc)) from exc
+    return {
+        "video_id": video.id,
+        "transcript_id": transcript.id,
+        "model": get_settings().ollama_model,
+        "candidates": [candidate.as_dict() for candidate in candidates],
+    }
+
+
 @router.post("/videos/{video_id}/clips", status_code=201)
 def create_clip(video_id: str, body: ClipIn, db: Session = Depends(get_db)) -> dict[str, Any]:
     v = db.get(Video, video_id)
@@ -80,7 +117,8 @@ def create_clip(video_id: str, body: ClipIn, db: Session = Depends(get_db)) -> d
         raise not_found("Video")
     _validate_range(v, body.start_time, body.end_time)
     c = Clip(project_id=v.project_id, video_id=v.id, title=body.title or f"Klip {body.start_time:.0f}s", start_time=body.start_time, end_time=body.end_time,
-             duration=body.end_time - body.start_time, transcript=_text_in_range(db, v.id, body.start_time, body.end_time), category="manual")
+             duration=body.end_time - body.start_time, transcript=_text_in_range(db, v.id, body.start_time, body.end_time),
+             hook=body.hook, score=body.score, category=body.category)
     db.add(c)
     db.add(ActivityLog(kind="clip", message=f"Klip dibuat: {c.title}", project_id=v.project_id))
     db.commit()

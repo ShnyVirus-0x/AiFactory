@@ -143,6 +143,19 @@ def test_encoder_selection_is_honest(monkeypatch):
     assert rd.pick_encoder("h265", "auto")[:2] == ("libx265", False)  # HEVC NVENC tidak ada -> CPU, tidak berpura-pura GPU
 
 
+def test_encoder_args_prioritize_quality():
+    assert RenderSpec().crf == 18
+    h264 = rd.encoder_args("libx264", 18)
+    assert h264[h264.index("-preset") + 1] == "medium"
+    assert h264[h264.index("-crf") + 1] == "18"
+    h265 = rd.encoder_args("libx265", 18)
+    assert h265[h265.index("-preset") + 1] == "medium"
+    assert h265[h265.index("-crf") + 1] == "20"
+    nvenc = rd.encoder_args("h264_nvenc", 18)
+    assert nvenc[nvenc.index("-preset") + 1] == "p6"
+    assert nvenc[nvenc.index("-cq") + 1] == "19"
+
+
 @needs_ffmpeg
 def test_run_ffmpeg_cancel_is_prompt(tmp_path):
     cmd = ["ffmpeg", "-nostdin", "-v", "error", "-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=60:duration=600", "-c:v", "libx264", "-preset", "veryslow",

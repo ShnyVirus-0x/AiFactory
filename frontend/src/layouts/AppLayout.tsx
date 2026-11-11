@@ -1,5 +1,6 @@
-import { BarChart3, Boxes, Brain, Captions, Clapperboard, FileText, Crop, Download, FolderKanban, Image, LayoutDashboard, Library, Settings, Wifi, WifiOff } from "lucide-react";
+import { BarChart3, Boxes, Brain, Captions, Clapperboard, FileText, Crop, Download, FolderKanban, Image, LayoutDashboard, Library, Menu, Settings, Wifi, WifiOff, X } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
 import { Badge, Toasts } from "../components/ui";
 import { useLiveEvents } from "../hooks/useLiveEvents";
 import { useAppStore } from "../stores/useAppStore";
@@ -23,19 +24,24 @@ const NAV = [
 export function AppLayout() {
   useLiveEvents();
   const ws = useAppStore((s) => s.wsConnected);
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className="flex h-full">
-      <aside className="flex w-60 shrink-0 flex-col border-r border-line bg-panel">
-        <div className="flex items-center gap-2 px-4 py-4">
+    <div className="flex min-h-screen md:h-full">
+      {mobileOpen && <button className="fixed inset-0 z-20 bg-black/60 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Tutup menu" />}
+      <aside className={`fixed inset-y-0 left-0 z-30 flex w-60 shrink-0 flex-col border-r border-line bg-panel transition-transform md:static md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex items-center justify-between gap-2 px-4 py-4">
+          <div className="flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">▶</div>
           <div className="leading-tight">
             <div className="text-sm font-semibold">AI Shorts Factory</div>
             <div className="text-[11px] text-mute">Studio lokal · 100% offline</div>
           </div>
+          </div>
+          <button className="rounded p-1 text-mute hover:bg-panel-2 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Tutup menu"><X size={18} /></button>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
           {NAV.map(({ to, label, icon: Icon, phase, ready }) => (
-            <NavLink key={to} to={to} end={to === "/"}
+            <NavLink key={to} to={to} end={to === "/"} onClick={() => setMobileOpen(false)}
               className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${isActive ? "bg-brand/15 text-brand-2" : "text-mute hover:bg-panel-2 hover:text-ink"}`}>
               <Icon size={17} />
               <span className="flex-1">{label}</span>
@@ -47,9 +53,15 @@ export function AppLayout() {
           <Badge kind={ws ? "ok" : "bad"}>{ws ? <Wifi size={12} /> : <WifiOff size={12} />}{ws ? "Terhubung (live)" : "Terputus — mencoba lagi"}</Badge>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl p-6"><Outlet /></div>
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-panel px-4 py-3 md:hidden">
+          <button className="rounded p-1 text-mute hover:bg-panel-2" onClick={() => setMobileOpen(true)} aria-label="Buka menu"><Menu size={20} /></button>
+          <span className="text-sm font-semibold">AI Shorts Factory</span>
+        </header>
+        <main className="min-w-0 flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl p-4 sm:p-6"><Outlet /></div>
+        </main>
+      </div>
       <Toasts />
     </div>
   );

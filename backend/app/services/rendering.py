@@ -71,12 +71,12 @@ def pick_encoder(codec: str, compute_mode: str) -> tuple[str, bool, str]:
 
 def encoder_args(encoder: str, crf: int) -> list[str]:
     if encoder == "h264_nvenc":
-        return ["-c:v", "h264_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", str(crf + 1), "-b:v", "0", "-profile:v", "high"]
+        return ["-c:v", "h264_nvenc", "-preset", "p6", "-rc", "vbr", "-cq", str(crf + 1), "-b:v", "0", "-profile:v", "high"]
     if encoder == "hevc_nvenc":
-        return ["-c:v", "hevc_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", str(crf + 1), "-b:v", "0", "-tag:v", "hvc1"]
+        return ["-c:v", "hevc_nvenc", "-preset", "p6", "-rc", "vbr", "-cq", str(crf + 1), "-b:v", "0", "-tag:v", "hvc1"]
     if encoder == "libx265":
-        return ["-c:v", "libx265", "-preset", "veryfast", "-crf", str(crf + 2), "-tag:v", "hvc1"]
-    return ["-c:v", "libx264", "-preset", "veryfast", "-crf", str(crf), "-profile:v", "high"]
+        return ["-c:v", "libx265", "-preset", "medium", "-crf", str(crf + 2), "-tag:v", "hvc1"]
+    return ["-c:v", "libx264", "-preset", "medium", "-crf", str(crf), "-profile:v", "high"]
 
 
 # ---------------------------------------------------------------- geometri

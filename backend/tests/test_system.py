@@ -97,7 +97,7 @@ def test_health_and_capabilities(client):
     caps = {c["key"]: c for c in h["capabilities"]}
     assert caps["library"]["available"] is True
     assert caps["transcription"]["available"] is True and caps["transcription"]["phase"] == 2
-    assert caps["clip_detection"]["available"] is False and caps["clip_detection"]["phase"] == 3
+    assert caps["clip_detection"]["available"] is True and caps["clip_detection"]["phase"] == 3
     assert caps["batch_renderer"]["available"] is True  # batch render dasar sudah tersedia
     assert caps["export_center"]["available"] is True
     assert caps["templates"]["available"] is False  # tidak berpura-pura sudah ada

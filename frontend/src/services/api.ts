@@ -1,4 +1,4 @@
-import type { ApiErrorBody, Clip, CropAnalysis, RenderJob, RenderSpec, Dashboard, GpuReport, Health, LimitsInfo, Limits, LoadedModel, Project, Resources, Segment, TranscriptFull, TranscriptInfo, TranscriptionJob, UploadResult, Video, WhisperModel } from "../types";
+import type { ApiErrorBody, Clip, ClipSuggestions, CropAnalysis, RenderJob, RenderSpec, Dashboard, GpuReport, Health, LimitsInfo, Limits, LoadedModel, Project, Resources, Segment, TranscriptFull, TranscriptInfo, TranscriptionJob, UploadResult, Video, WhisperModel } from "../types";
 
 export class ApiError extends Error {
   code: string;
@@ -88,7 +88,8 @@ export const api = {
   exportUrl: (id: string, fmt: "srt" | "vtt" | "txt") => `/api/transcripts/${id}/export?format=${fmt}`,
   clips: (videoId: string) => req<Clip[]>(`/clips?video_id=${videoId}`),
   projectClips: (projectId: string) => req<Clip[]>(`/clips?project_id=${projectId}`),
-  createClip: (videoId: string, b: { start_time: number; end_time: number; title: string }) => req<Clip>(`/videos/${videoId}/clips`, json("POST", b)),
+  createClip: (videoId: string, b: { start_time: number; end_time: number; title: string; hook?: string; score?: number; category?: string }) => req<Clip>(`/videos/${videoId}/clips`, json("POST", b)),
+  suggestClips: (videoId: string, max_candidates = 12) => req<ClipSuggestions>(`/videos/${videoId}/suggest-clips`, json("POST", { max_candidates })),
   patchClip: (id: string, b: Partial<Pick<Clip, "title" | "start_time" | "end_time" | "approved">>) => req<Clip>(`/clips/${id}`, json("PATCH", b)),
   deleteClip: (id: string) => req<void>(`/clips/${id}`, { method: "DELETE" }),
   getEdit: (id: string) => req<RenderSpec>(`/clips/${id}/edit`),

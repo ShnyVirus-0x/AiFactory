@@ -200,8 +200,25 @@ export interface Clip {
   end_time: number;
   duration: number;
   transcript: string;
+  hook: string;
+  score: number;
   approved: boolean;
   category: string;
+}
+export interface ClipCandidate {
+  start_time: number;
+  end_time: number;
+  title: string;
+  hook: string;
+  reason: string;
+  score: number;
+  category: string;
+}
+export interface ClipSuggestions {
+  video_id: string;
+  transcript_id: string;
+  model: string;
+  candidates: ClipCandidate[];
 }
 export interface CaptionSpec {
   enabled: boolean;

@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./layouts/AppLayout";
 import { ComingSoon } from "./pages/ComingSoon";
 import { ClipStudio } from "./pages/ClipStudio";
+import { ClipEditor } from "./pages/ClipEditor";
+import { Analysis } from "./pages/Analysis";
 import { Dashboard } from "./pages/Dashboard";
 import { Projects } from "./pages/Projects";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -23,8 +25,8 @@ export default function App() {
         <Route path="library" element={<VideoLibrary />} />
         <Route path="transcripts" element={<Transcription />} />
         <Route path="settings" element={<SettingsPage />} />
-        {soon("analysis", "Analisis AI", "clip_detection", "Transkripsi (Whisper) dan deteksi klip viral dengan Qwen lokal.")}
-        {soon("editor", "Editor Klip", "clip_editor", "Pratinjau, potong, bagi, gabung, timeline, dan undo/redo.")}
+        <Route path="analysis" element={<Analysis />} />
+        <Route path="editor" element={<ClipEditor />} />
         {soon("subtitles", "Studio Subtitle", "subtitle_studio", "Subtitle per kata dengan highlight, preset, dan renderer ASS.")}
         <Route path="crop" element={<ClipStudio />} />
         <Route path="split" element={<Navigate to="/crop" replace />} />

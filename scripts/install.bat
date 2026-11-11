@@ -31,7 +31,7 @@ where nvidia-smi >nul 2>nul && (
 ) || (echo [PERINGATAN] nvidia-smi tidak ditemukan: pasang driver NVIDIA terbaru bila punya GPU. Tanpa GPU, mode CPU dipakai. & set "WARN=1")
 
 rem --- Ollama (opsional, untuk Fase 3) ---
-where ollama >nul 2>nul && (echo [OK] Ollama ditemukan) || (echo [INFO] Ollama belum terpasang ^(dibutuhkan mulai Fase 3^): https://ollama.com)
+where ollama >nul 2>nul && (echo [OK] Ollama ditemukan) || (echo [INFO] Ollama belum terpasang ^(opsional untuk analisis saran klip lokal^): https://ollama.com)
 
 rem --- Virtualenv + dependensi Python ---
 if not exist .venv (python -m venv .venv || exit /b 1)
